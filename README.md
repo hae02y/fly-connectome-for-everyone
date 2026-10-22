@@ -17,3 +17,9 @@
 - [Google Research: complete male fruit fly brain](https://research.google/blog/a-connectomics-milestone-mapping-the-complete-male-fruit-fly-brain/)
 - [Nature: female adult fly brain connectome](https://doi.org/10.1038/s41586-024-07558-y)
 
+## 목차
+
+- [00. 이 책을 읽기 전에](pages/00-preface.md)
+- [01. 왜 초파리인가](pages/01-why-fruit-fly.md)
+- [02. 뉴런과 시냅스를 쉽게 이해하기](pages/02-neuron-and-synapse.md)
+- [03. 커넥톰이란 무엇인가](pages/03-what-is-connectome.md)
