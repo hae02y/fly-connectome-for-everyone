@@ -1,6 +1,6 @@
 # 출처 검증 기록
 
-확인일: 2026-10-22. 본문은 원문을 번역 전재하지 않고 설명·비유·가상 예제를 독자적으로 작성했습니다.
+확인일: 2026-10-23. 본문은 원문을 번역 전재하지 않고 설명·비유·가상 예제를 독자적으로 작성했습니다.
 
 | 자료 | URL | 사용 범위 |
 |---|---|---|
@@ -9,6 +9,9 @@
 | MaleCNS | https://male-cns.janelia.org/ | 2025-10-03 초기 공개, 2026-06-08 v1.0, 2026-09-03 출판 |
 | Shiu 모델 | https://doi.org/10.1038/s41586-024-07763-9 | 감각운동 계산 모델과 검증 범위 |
 | 원본 구현 | https://github.com/philshiu/Drosophila_brain_model | LIF 모델, 실행 자료 안내 |
+| 모델 README·코드 | https://github.com/philshiu/Drosophila_brain_model/blob/main/Readme.md | Conda 환경, Colab, `Connectivity_783.parquet`, `Completeness_783.csv`, `run_exp` 사용법 확인 |
+| FlyConnectome 예제 | https://github.com/seung-lab/FlyConnectome | FlyWire 연결 자료의 프로그래밍 접근 튜토리얼 |
+| Codex 다운로드 | https://codex.flywire.ai/api/download | 정적 연결·주석 자료 다운로드 경로 |
 | 시각 방향 선택성 | https://doi.org/10.1038/nature12320 | T4/T5와 ON/OFF 경로 |
 | 연결 제약과 기능 | https://doi.org/10.1038/s41586-024-07939-3 | 구조와 학습을 결합한 연구 |
 | MBON 연구 | https://elifesciences.org/articles/04580 | 학습된 가치와 행동 선택 |
@@ -26,4 +29,4 @@
 - 게임 시연의 성능·의식·질병 치료 효과에 대한 검증되지 않은 주장은 수록하지 않음.
 - 실습 설명은 공식 웹 안내에 근거하며, 직접 수행한 결과나 실존 식별자를 꾸며 넣지 않음.
 - 설명용 계산 수치, A/B 냄새 실험, 가상 제어기 성능은 실제 결과가 아니라고 표시.
-
+- 소스코드 따라하기는 2026-10-23 공개 README·`model.py`의 파일명·열 이름·함수 인자를 대조해 작성했으며, 이 원고에서 대규모 모델을 직접 실행한 것으로 표현하지 않음.

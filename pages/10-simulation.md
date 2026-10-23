@@ -37,6 +37,108 @@ Shiu 등의 공개 저장소는 초파리 뇌의 LIF 모델을 제공합니다. 
 | 무엇을 맞혔나 | 특정 감각운동 반응 |
 | 무엇을 검증하지 않았나 | 다른 행동·학습·의식 등 |
 
+## 소스코드로 직접 내려받아 실행하는 세 가지 경로
+
+커넥톰을 “사용한다”는 말은 세 수준으로 나뉩니다. 웹 화면에서 세포를 찾아보는 것, 표 파일을 내려받아 연결을 세어 보는 것, 연결 자료를 신경세포 모델에 넣어 시간에 따른 활동을 계산하는 것입니다. 세 번째가 가장 무겁고, 첫 번째와 두 번째만으로도 충분히 의미 있는 관찰을 할 수 있습니다.
+
+| 경로 | 필요한 것 | 얻는 결과 | 초보자에게 권하는 순서 |
+|---|---|---|---|
+| 웹 탐색 | 브라우저 | 세포·연결·주석 확인 | 1순위 |
+| 노트북 | Google Colab 또는 Jupyter | 표 필터링·간단한 그래프 | 2순위 |
+| 로컬 모델 | Python·Conda·CPU | 스파이크와 네트워크 시뮬레이션 | 3순위 |
+
+### A. 공식 모델 저장소 받기
+
+이 책에서 예로 드는 [Drosophila brain model 저장소](https://github.com/philshiu/Drosophila_brain_model)는 초파리 뇌 전체를 대상으로 한 LIF 모델의 코드와 예제 노트북을 공개합니다. 저장소의 README에 **Open in Colab** 배지가 있으면 설치 없이 그 경로를 먼저 선택할 수 있습니다. Colab은 실행 환경이 임시이므로 결과 파일을 자신의 Drive나 내려받은 파일로 따로 보관해야 합니다.
+
+로컬 컴퓨터에서 받는 기본 명령은 다음과 같습니다.
+
+```bash
+git clone https://github.com/philshiu/Drosophila_brain_model.git
+cd Drosophila_brain_model
+conda env create -f environment.yml
+# 위 명령이 출력한 환경 이름을 확인한 뒤 아래에 입력
+conda env list
+conda activate <environment.yml에 적힌 환경 이름>
+jupyter notebook example.ipynb
+```
+
+`fly-brain-model`이라는 환경 이름은 예시입니다. 실제 환경 이름은 `environment.yml`의 `name` 항목을 확인하고 그 이름으로 활성화하세요. Conda가 없다면 Miniconda 또는 Anaconda의 공식 설치 안내를 먼저 읽습니다. 저장소의 환경 파일과 README가 바뀔 수 있으므로, 실행 전에 저장소의 현재 커밋과 파일 내용을 기록하세요.
+
+### B. 데이터 파일과 코드의 역할 구분
+
+저장소에는 코드뿐 아니라 연결 자료(`Connectivity_*.parquet`)와 완전성 목록(`Completeness_*.csv`)이 함께 제공됩니다. 여기서 숫자 `630`, `783` 등은 서로 다른 데이터 버전을 가리키므로 파일을 섞으면 안 됩니다.
+
+| 파일 | 뜻 | 코드에서 쓰이는 위치 |
+|---|---|---|
+| `Connectivity_783.parquet` | 뉴런 사이 연결 표 | `path_con` |
+| `Completeness_783.csv` | 분석 대상 뉴런 목록·완전성 | `path_comp` |
+| `model.py` | 네트워크·입력·시뮬레이션 규칙 | 모델 본체 |
+| `example.ipynb` | 작은 실행 예제와 사용법 | 첫 실습 |
+| `figures.ipynb` | 논문 그림을 재계산하는 노트북 | 재현 단계 |
+
+버전 번호가 같은 파일을 골랐는지 먼저 확인합니다. 논문이 사용한 자료 버전과 저장소의 현재 기본 버전이 다를 수도 있습니다. 그 경우 “논문 재현”이라고 쓰지 말고 “현재 공개 버전으로 실행한 탐색”이라고 표현합니다.
+
+### C. 가장 작은 연결표부터 읽기
+
+처음부터 전체 시뮬레이션을 실행하지 말고, 표에서 행 몇 개를 읽어 구조를 확인하는 것이 안전합니다. 아래 코드는 연결 표의 열 이름과 앞부분을 확인하는 학습용 예입니다.
+
+```python
+import pandas as pd
+
+con = pd.read_parquet("Connectivity_783.parquet")
+print(con.columns.tolist())
+print(con.head())
+print(con.shape)
+```
+
+실행 결과의 열 이름은 버전에 따라 달라질 수 있습니다. `pre_root_id`, `post_root_id` 같은 이름을 임의로 가정하지 말고 `columns` 출력부터 확인하세요. 그다음 특정 뉴런 ID를 찾을 때는 다음처럼 조건을 좁힙니다.
+
+```python
+neuron_id = 123456789  # 예시 숫자이며 실제 세포 ID가 아님
+outgoing = con[con["Presynaptic_Index"] == neuron_id]
+incoming = con[con["Postsynaptic_Index"] == neuron_id]
+print("출력 연결 수:", len(outgoing))
+print("입력 연결 수:", len(incoming))
+```
+
+이 저장소의 현재 모델 코드는 `Presynaptic_Index`, `Postsynaptic_Index`를 연결 행·열로 사용하지만, 다른 데이터셋이나 버전은 이름이 다를 수 있습니다. 오류가 나면 코드가 틀렸다고 단정하지 말고, 먼저 해당 버전의 README와 열 이름을 확인하세요. 예시 숫자를 실제 뉴런으로 오해하지 않도록 결과를 책이나 블로그에 그대로 인용해서는 안 됩니다.
+
+### D. 모델 실행은 작은 조건으로 시작하기
+
+`example.ipynb`를 열었다면 입력 뉴런 수와 실행 시간을 아주 작게 둔 첫 실행을 권합니다. 모델 README에 설명된 대로 입력은 활성화할 FlyWire ID 목록, 선택적으로 침묵시킬 목록으로 전달되고 결과는 영향을 받은 뉴런의 스파이크 시각·비율로 저장됩니다.
+
+```python
+from model import run_exp, default_params
+
+params = default_params.copy()
+params["t_run"] = 100  # 단위는 저장소의 설정을 확인
+
+run_exp(
+    exp_name="toy_run",
+    neu_exc=[123456789],  # 실제 분석 전에는 데이터에서 확인한 ID 사용
+    path_res="results/toy_run",
+    path_comp="Completeness_783.csv",
+    path_con="Connectivity_783.parquet",
+    params=params,
+)
+```
+
+함수 이름과 인자 형식은 저장소의 현재 `model.py`를 기준으로 확인해야 합니다. 위 코드는 흐름을 보여 주는 교육용 예이며, 이 책에서 실제로 실행해 수치를 검증한 결과가 아닙니다. CPU·메모리·실행 시간에 따라 대규모 실행은 매우 오래 걸릴 수 있고, README는 원시 결과가 수 GB가 될 수 있다고 안내합니다.
+
+### E. 실행 기록을 남기는 표
+
+| 기록 항목 | 예시 | 반드시 확인할 이유 |
+|---|---|---|
+| 저장소 커밋 | `git rev-parse HEAD` | 코드가 바뀌면 결과도 달라짐 |
+| 데이터 파일 | `Connectivity_783.parquet` | 버전 혼합 방지 |
+| Python·패키지 | `conda env export` | 환경 재현 |
+| 입력 ID | 실제 ID 목록 파일 | 임의 숫자와 구분 |
+| 실행 시간 | `t_run`과 단위 | 결과 크기와 비교 |
+| 출력 위치 | `results/toy_run/` | 결과 파일 분실 방지 |
+
+소스코드를 받아 실행했다는 사실은 프로그램이 동작했다는 뜻이지, 모델이 생물의 뇌를 복제했다는 뜻은 아닙니다. 연결 자료, 동역학 규칙, 입력 자극, 출력 측정이 모두 기록되어야 다른 사람이 같은 조건을 재검토할 수 있습니다.
+
 ## 오류가 나면 계산 단위를 살펴본다
 
 한 단계가 1밀리초인 모델과 1초인 모델에 같은 입력 값을 넣으면 전혀 다른 결과가 나올 수 있습니다. 자극 강도의 단위, 시간 단위, 가중치의 해석을 먼저 확인하세요. 숫자만 복사하면 모델의 의미가 바뀔 수 있습니다.
